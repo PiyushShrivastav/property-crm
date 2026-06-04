@@ -7,9 +7,13 @@ import com.propertycrm.app.entity.Employee;
 import com.propertycrm.app.entity.Lead;
 import com.propertycrm.app.entity.LeadFollowUp;
 import com.propertycrm.app.entity.LeadStatus;
+import com.propertycrm.app.entity.Notification;
+import com.propertycrm.app.entity.NotificationType;
+import com.propertycrm.app.entity.User;
 import com.propertycrm.app.repository.EmployeeRepository;
 import com.propertycrm.app.repository.LeadFollowUpRepository;
 import com.propertycrm.app.repository.LeadRepository;
+import com.propertycrm.app.repository.NotificationRepository;
 import com.propertycrm.app.service.LeadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,7 @@ public class LeadServiceImpl implements LeadService {
     private final LeadRepository leadRepository;
     private final EmployeeRepository employeeRepository;
     private final LeadFollowUpRepository leadFollowUpRepository;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public LeadResponse createLead(LeadRequest request) {
@@ -55,6 +60,25 @@ public class LeadServiceImpl implements LeadService {
                 .build();
 
         lead = leadRepository.save(lead);
+        
+        User assignedUser =
+                employee.getUser();
+
+        Notification notification =
+                Notification.builder()
+                        .title("New Lead Assigned")
+                        .message(
+                                "Lead assigned : "
+                                + lead.getCustomerName())
+                        .type(
+                                NotificationType.LEAD_ASSIGNED)
+                        .createdAt(
+                                java.time.LocalDateTime.now())
+                        .isRead(false)
+                        .user(assignedUser)
+                        .build();
+
+        notificationRepository.save(notification);
 
         return mapToResponse(lead);
     }

@@ -14,4 +14,6 @@ public interface LeadRepository
     List<Lead> findByAssignedEmployeeId(Long employeeId);
 
     boolean existsByMobile(String mobile);
+    
+    long countByStatus(LeadStatus status);
 }

@@ -21,6 +21,7 @@ public class BookingServiceImpl
     private final CustomerRepository customerRepository;
     private final ProjectRepository projectRepository;
     private final UnitRepository unitRepository;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public BookingResponse createBooking(
@@ -29,17 +30,20 @@ public class BookingServiceImpl
         Customer customer =
                 customerRepository.findById(
                         request.getCustomerId())
-                        .orElseThrow();
+                .orElseThrow(() ->
+                new RuntimeException("Customer not found"));
 
         Project project =
                 projectRepository.findById(
                         request.getProjectId())
-                        .orElseThrow();
+                .orElseThrow(() ->
+                new RuntimeException("Project not found"));
 
         Unit unit =
                 unitRepository.findById(
                         request.getUnitId())
-                        .orElseThrow();
+                .orElseThrow(() ->
+                new RuntimeException("Unit not found"));
 
         if(unit.getStatus() != UnitStatus.AVAILABLE) {
 
@@ -66,6 +70,24 @@ public class BookingServiceImpl
 
         booking = bookingRepository.save(
                 booking);
+        
+        Notification notification =
+                Notification.builder()
+                        .title("Booking Confirmed")
+                        .message(
+                                "Booking created for Unit : "
+                                + unit.getUnitNo())
+                        .type(
+                                NotificationType.BOOKING_CONFIRMED)
+                        .createdAt(
+                                java.time.LocalDateTime.now())
+                        .isRead(false)
+                        .user(customer.getLead()
+                                .getAssignedEmployee()
+                                .getUser())
+                        .build();
+
+        notificationRepository.save(notification);
 
         unit.setStatus(
                 UnitStatus.BOOKED);

@@ -14,4 +14,6 @@ public interface UnitRepository
     List<Unit> findByStatus(UnitStatus status);
 
     boolean existsByUnitNo(String unitNo);
+    
+    long countByStatus(UnitStatus status);
 }

@@ -28,11 +28,68 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
-                        .anyRequest()
-                        .authenticated())
+
+                	    .requestMatchers(
+                	            "/api/auth/**"
+                	    ).permitAll()
+
+                	    // ADMIN + DIRECTOR
+                	    .requestMatchers(
+                	            "/api/dashboard/**"
+                	    ).hasAnyRole(
+                	            "ADMIN",
+                	            "DIRECTOR"
+                	    )
+
+                	    // ADMIN ONLY
+                	    .requestMatchers(
+                	            "/api/employees/**",
+                	            "/api/projects/**",
+                	            "/api/units/**"
+                	    ).hasRole("ADMIN")
+
+                	    // SALES + MANAGER + ADMIN
+                	    .requestMatchers(
+                	            "/api/bookings/**",
+                	            "/api/unit-holds/**"
+                	    ).hasAnyRole(
+                	            "ADMIN",
+                	            "MANAGER",
+                	            "SALES"
+                	    )
+
+                	    // LEADS
+                	    .requestMatchers(
+                	            "/api/leads/**"
+                	    ).hasAnyRole(
+                	            "ADMIN",
+                	            "MANAGER",
+                	            "SALES",
+                	            "TELECALLER",
+                	            "CRM_EXECUTIVE"
+                	    )
+
+                	    // ACCOUNTS
+                	    .requestMatchers(
+                	            "/api/payments/**",
+                	            "/api/receipts/**"
+                	    ).hasAnyRole(
+                	            "ADMIN",
+                	            "ACCOUNTANT"
+                	    )
+
+                	    // CRM
+                	    .requestMatchers(
+                	            "/api/customers/**"
+                	    ).hasAnyRole(
+                	            "ADMIN",
+                	            "CRM_EXECUTIVE",
+                	            "MANAGER"
+                	    )
+
+                	    .anyRequest()
+                	    .authenticated()
+                	)
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
